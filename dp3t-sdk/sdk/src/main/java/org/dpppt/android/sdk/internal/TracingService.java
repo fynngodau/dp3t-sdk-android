@@ -228,7 +228,12 @@ public class TracingService extends Service {
 		Intent intent = new Intent(context, TracingServiceBroadcastReceiver.class);
 		intent.setAction(ACTION_RESTART_CLIENT);
 		PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 1, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-		alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, now + delay, pendingIntent);
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+			alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, now + delay, pendingIntent);
+		} else {
+			// setExact has exact behaviour below Android Marshmellow
+			alarmManager.setExact(AlarmManager.RTC_WAKEUP, now + delay, pendingIntent);
+		}
 	}
 
 	public static void scheduleNextServerRestart(Context context) {
@@ -237,7 +242,12 @@ public class TracingService extends Service {
 		Intent intent = new Intent(context, TracingServiceBroadcastReceiver.class);
 		intent.setAction(ACTION_RESTART_SERVER);
 		PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 2, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-		alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, nextEpochStart, pendingIntent);
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+			alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, nextEpochStart, pendingIntent);
+		} else {
+			// setExact has exact behaviour below Android Marshmellow
+			alarmManager.setExact(AlarmManager.RTC_WAKEUP, nextEpochStart, pendingIntent);
+		}
 	}
 
 	private void stopForegroundService() {

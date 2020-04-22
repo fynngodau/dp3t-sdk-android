@@ -147,11 +147,14 @@ public class DP3T {
 			errors.add(TracingStatus.ErrorState.BLE_DISABLED);
 		}
 
-		PowerManager powerManager = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
-		boolean batteryOptimizationsDeactivated = powerManager.isIgnoringBatteryOptimizations(context.getPackageName());
-		if (!batteryOptimizationsDeactivated) {
-			errors.add(TracingStatus.ErrorState.BATTERY_OPTIMIZER_ENABLED);
+		if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+			PowerManager powerManager = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+			boolean batteryOptimizationsDeactivated = powerManager.isIgnoringBatteryOptimizations(context.getPackageName());
+			if (!batteryOptimizationsDeactivated) {
+				errors.add(TracingStatus.ErrorState.BATTERY_OPTIMIZER_ENABLED);
+			}
 		}
+
 
 		boolean locationPermissionGranted = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) ==
 				PackageManager.PERMISSION_GRANTED;
