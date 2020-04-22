@@ -86,16 +86,20 @@ bintray {
 	}
 }
 
+repositories {
+	maven { url 'https://jitpack.io' }
+}
 
 dependencies {
 	implementation fileTree(dir: 'libs', include: ['*.jar'])
 
 	implementation 'androidx.core:core:1.2.0'
-	implementation "androidx.security:security-crypto:1.0.0-beta01"
 	implementation 'androidx.work:work-runtime:2.3.4'
 
 	implementation 'com.squareup.retrofit2:retrofit:2.6.2'
 	implementation 'com.squareup.retrofit2:converter-gson:2.6.2'
+
+	implementation 'com.github.BottleRocketStudios:Android-Vault:1.4.2'
 
 	testImplementation 'junit:junit:4.12'
 

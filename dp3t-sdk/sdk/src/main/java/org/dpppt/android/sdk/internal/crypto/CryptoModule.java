@@ -9,10 +9,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Pair;
-import androidx.security.crypto.EncryptedSharedPreferences;
-import androidx.security.crypto.MasterKeys;
 
-import java.io.IOException;
 import java.security.*;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -25,6 +22,9 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
+
+import com.bottlerocketstudios.vault.SharedPreferenceVault;
+import com.bottlerocketstudios.vault.SharedPreferenceVaultFactory;
 
 import org.dpppt.android.sdk.internal.backend.models.ExposeeAuthData;
 import org.dpppt.android.sdk.internal.backend.models.ExposeeRequest;
@@ -44,6 +44,12 @@ public class CryptoModule {
 	public static final int CONTACT_THRESHOLD = 1;
 	private static final byte[] BROADCAST_KEY = "broadcast key".getBytes();
 
+	private static final String PREF_FILE_NAME = "dp3t-data";
+	private static final String KEY_FILE_NAME = "dp3t-keys";
+	private static final String KEY_ALIAS = "dp3t";
+	private static final int VAULT_ID = 3738; // DP3T on a phone keyboard
+	private static final String PRESHARED_SECRET = "This secret will never be used because API 18 is not targeted";
+
 	private static final String KEY_SK_LIST_JSON = "SK_LIST_JSON";
 	private static final String KEY_EPHIDS_TODAY_JSON = "EPHIDS_TODAY_JSON";
 
@@ -54,15 +60,20 @@ public class CryptoModule {
 	public static CryptoModule getInstance(Context context) {
 		if (instance == null) {
 			instance = new CryptoModule();
+
 			try {
-				String KEY_ALIAS = MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC);
-				instance.esp = EncryptedSharedPreferences.create("dp3t_store",
-						KEY_ALIAS,
+				// Create an automatically keyed vault
+				SharedPreferenceVault secureVault = SharedPreferenceVaultFactory.getAppKeyedCompatAes256Vault(
 						context,
-						EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-						EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM);
-			} catch (GeneralSecurityException | IOException ex) {
-				ex.printStackTrace();
+						PREF_FILE_NAME,     //Preference file name to store content
+						KEY_FILE_NAME,      //Preference file to store key material
+						KEY_ALIAS,          //App-wide unique key alias
+						VAULT_ID,           //App-wide unique vault id
+						PRESHARED_SECRET    //Random string for pre v18
+				);
+				instance.esp = secureVault;
+			} catch (GeneralSecurityException e) {
+				e.printStackTrace();
 			}
 		}
 		return instance;
